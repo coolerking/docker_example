@@ -1,0 +1,15 @@
+mattermost-preview:
+  image: mattermost/mattermost-preview
+  ports:
+   - "8065:8065"
+   - "3306:3306"
+  dns:
+   - 160.14.95.11
+   - 160.14.23.11
+   - 160.14.254.1
+  environment:
+  - HTTP_PROXY=http://solidproxy.exa-corp.co.jp:8080/
+  - HTTPS_PROXY=http://solidproxy.exa-corp.co.jp:8080/
+  - NO_PROXY=127.0.0.1,exa-corp.co.jp,160.14.*
+  volumes:
+    - ./data/work:/work

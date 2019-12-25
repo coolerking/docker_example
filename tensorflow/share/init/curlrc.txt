@@ -1,0 +1,1 @@
+proxy=http://solidproxy.exa-corp.co.jp:8080/

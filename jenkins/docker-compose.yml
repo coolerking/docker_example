@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+
+  jenkins:
+    image: jenkins:latest
+    restart: unless-stopped
+    volumes:
+      - ./data/jenkins:/var/jenkins_home
+    ports:
+      - 8080:8080
+      - 50000:50000
+    environment:
+      - TZ=Asia/Tokyo
+      - HTTP_PROXY=http://solidproxy.exa-corp.co.jp:8080
+      - HTTPS_PROXY=http://solidproxy.exa-corp.co.jp:8080

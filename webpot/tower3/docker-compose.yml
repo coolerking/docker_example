@@ -1,0 +1,79 @@
+version: '2'
+
+services:
+
+  jenkins:
+    image: jenkins:latest
+    restart: unless-stopped
+    volumes:
+      - ./data/jenkins:/var/jenkins_home
+    ports:
+      - 3002:8080
+      - 50000:50000
+    environment:
+      - TZ=Asia/Tokyo
+      - HTTP_PROXY=http://solidproxy.exa-corp.co.jp:8080
+      - HTTPS_PROXY=http://solidproxy.exa-corp.co.jp:8080
+
+  redmine:
+    image: redmine:latest
+    restart: unless-stopped
+    volumes:
+      - ./data/redmine:/usr/src/redmine/files
+    ports:
+      - 3001:3000
+    environment:
+      - REDMINE_DB_MYSQL=mariadb
+      - REDMINE_DB_PASSWORD=admin123
+      - TZ=Asia/Tokyo
+      - HTTP_PROXY=http://solidproxy.exa-corp.co.jp:8080
+      - HTTPS_PROXY=http://solidproxy.exa-corp.co.jp:8080
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:latest
+    restart: unless-stopped
+    volumes:
+      - ./data/mariadb/conf:/etc/mysql/conf.d
+      - ./data/mariadb/data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin123
+      - MYSQL_DATABASE=redmine
+      - TZ=Asia/Tokyo
+
+  rocketchat:
+    image: rocketchat/rocket.chat:latest
+    restart: unless-stopped
+    volumes:
+      - ./data/rocketchat:/app/uploads
+    ports:
+      - 3000:3000
+    environment:
+      - PORT=3000
+      - ROOT_URL=http://tower3.webpot.local:3000
+      - MONGO_URL=mongodb://mongo:27017/rocketchat
+      - MONGO_OPLOG_URL=mongodb://mongo:27017/local
+      - MAIL_URL=smtp://127.0.0.11
+      - TZ=Asia/Tokyo
+    depends_on:
+      - mongo
+    labels:
+      - "traefik.backend=rocketchat"
+      - "traefik.frontend.rule=Host: webpot.local"
+
+  mongo:
+    image: mongo:3.2
+    restart: unless-stopped
+    volumes:
+     - ./data/mongo/db:/data/db
+     - ./data/mongo/dump:/dump
+    command: mongod --smallfiles --oplogSize 128 --replSet rs0
+    labels:
+      - "traefik.enable=false"
+
+  mongo-init-replica:
+    image: mongo:3.2
+    command: 'mongo mongo/rocketchat --eval "rs.initiate({ _id: ''rs0'', members: [ { _id: 0, host: ''localhost:27017'' } ]})"'
+    depends_on:
+      - mongo

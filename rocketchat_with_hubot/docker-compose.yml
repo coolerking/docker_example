@@ -1,0 +1,56 @@
+version: '2.2'
+services:
+  rocketchat:
+    image: rocketchat/rocket.chat:latest
+    volumes:
+      - ./data/rocketchat:/app/uploads
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - PORT=3000
+      - ROOT_URL=http://localhost:3000
+      - MONGO_URL=mongodb://mongo:27017/rocketchat
+      - HTTP_PROXY=http://solidproxy.exa-corp.co.jp:8080
+      - HTTPS_PROXY=http://solidproxy.exa-corp.co.jp:8080
+      - TZ=Asia/Tokyo
+    links:
+      - mongo:mongo
+    ports:
+      - 3000:3000
+
+  mongo:
+    image: mongo:3.2
+    volumes:
+      - ./data/mongo:/data/db
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - TZ=Asia/Tokyo
+    command: mongod --smallfiles --oplogSize 128
+
+  hubot:
+    build:
+      context: ./hubot_proxy
+      args:
+        HTTP_PROXY: http://solidproxy.exa-corp.co.jp:8080
+        HTTPS_PROXY: http://solidproxy.exa-corp.co.jp:8080
+    environment:
+      - ROCKETCHAT_URL=rocketchat:3000
+      - ROCKETCHAT_ROOM=
+      - LISTEN_ON_ALL_PUBLIC=true
+      - ROCKETCHAT_USER=bot
+      - ROCKETCHAT_PASSWORD=password
+      - BOT_OWNER="Change Your name <change@your.email>"
+      - BOT_NAME=bot
+      - BOT_DESC="Write your bot description here"
+      - HTTP_PROXY=http://solidproxy.exa-corp.co.jp:8080
+      - HTTPS_PROXY=http://solidproxy.exa-corp.co.jp:8080
+      - EXTERNAL_SCRIPTS=hubot-seen,hubot-google,hubot-reddit,hubot-bookmark
+      - TZ=Asia/Tokyo
+    links:
+      - rocketchat:rocketchat
+    labels:
+      - "traefik.enable=false"
+    volumes:
+      - ./data/hubot:/home/hubot/scripts
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 3001:8080

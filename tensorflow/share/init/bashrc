@@ -1,0 +1,8 @@
+export PATH=${PATH}:.
+export C.UTF-8
+export HTTP_PROXY=http://solidproxy.exa-corp.co.jp:8080/
+export HTTPS_PROXY=http://solidproxy.exa-corp.co.jp:8080/
+export NO_PROXY=127.0.0.1,localhost,*.exa-corp.co.jp,*.webpot.local,192.168.*,160.14.*,10.*
+export http_proxy=${HTTP_PROXY}
+export https_proxy=${HTTPS_PROXY}
+export no_proxy=${NO_PROXY}

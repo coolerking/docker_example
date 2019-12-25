@@ -1,0 +1,21 @@
+selenium_hub:
+  image: selenium/hub:2.45.0
+  ports:
+   - "4444:4444"
+chrome:
+  image: selenium/node-chrome-debug:2.45.0
+  links:
+    - selenium_hub:hub
+  volumes:
+    - ./data/chrome:/e2e/uploads
+    - /dev/shm:/dev/shm
+  ports:
+   - "5901:5900"
+firefox:
+  image: selenium/node-firefox-debug:2.45.0
+  links:
+    - selenium_hub:hub
+  volumes:
+    - ./data/firefox:/e2e/uploads
+  ports:
+   - "5902:5900"
